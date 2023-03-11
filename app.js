@@ -46,7 +46,7 @@ const getTour = (req, res) => {
 
 }
 
-const postTour = (req, res)=>{
+const createTour = (req, res)=>{
     const newId = tours[tours.length-1].id+1;
     const newTour = Object.assign({id: newId}, req.body);
 
@@ -104,9 +104,8 @@ const deleteTour = (req, res)=>{
 
     //Tours handlers
 
-app.get("/api/v1/tours", getAllTours);
-
-app.post("/api/v1/tours", postTour);
+// app.get("/api/v1/tours", getAllTours);
+// app.post("/api/v1/tours", createTour);
 //Getting a specific tour using id
 app.get("/api/v1/tours/:id", getTour);
 //Patching an article
@@ -114,6 +113,15 @@ app.patch("/api/v1/tours/:id", patchTour);
 //Deleting a tour
 app.delete("/api/v1/tours/:id", deleteTour);
 
+//router refactoring
+app.route("/api/v1/tours")
+.get(getAllTours)
+.post(createTour);
+
+app.route("/api/v1/tours/:id")
+.get("getTour")
+.patch("patchTour")
+.delete("deleteTour");
 //setting up our port response
 const port = 3000;
 
