@@ -45,6 +45,16 @@ app.post("/api/v1/tours", (req, res)=>{
 //Getting a specific tour using id
 app.get("/api/v1/tours/:id",(req, res) => {
     const id = req.params.id * 1;
+
+    //Getting a specific tour from an object in an array
+    //Handling an error or wrong input
+    if(id > tours.length){
+        return res.status(404)
+        .json({
+            status: "fail",
+            message: "Invalid request"
+        });
+    }
     const tour = tours.find(el => el.id === id);
     res.status(200)
     .json({
@@ -54,6 +64,23 @@ app.get("/api/v1/tours/:id",(req, res) => {
         }
     })
 
+});
+//Patching an article
+app.patch("/api/v1/tours/:id", (req, res)=>{
+    if (req.params.id * 1 > tours.length){
+        return res.status(404).json({
+            status: "fail",
+            message: "Invalid Input"
+        });
+    }
+
+    res.status(200)
+    .json({
+        status: "Success",
+        data:{
+            tour: '<Updated tour here>'
+        }
+    });
 });
 
 //setting up our port response
