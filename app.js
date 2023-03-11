@@ -3,18 +3,30 @@ const express = require("express");
 const app = express();
 
 const port = 3000;
-const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/tours-simple.json`));
+const audio = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`));
 
 
 
+//Initializing routes
+//Getting tours
 
-
-app.get("/api/v1/cisty", (req, res)=>{
+app.get("/api/v1/audio", (req, res)=>{
 res
 .status(200)
-.json({ message: 'Hello from the server side', app: "Cisty-api" });
+.json({
+    status: "Success",
+    result: audio.length,
+
+    data: {
+        audio
+
+    }
 
 });
+
+});
+
+//setting up our port response
 
 app.listen(port, ()=>{
     console.log(`App running on port ${port}`);
