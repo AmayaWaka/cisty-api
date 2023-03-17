@@ -2,19 +2,30 @@ const Tour = require("./../models/tourModel");
 
 
 
+//Getting tours using promises
+exports.getAllTours = async (req, res)=>{
 
-exports.getAllTours = (req, res)=>{
-    console.log(req.requestTime);
-    res
-    .status(200)
-    .json({
-        status: "Success",
-        requestedAt: req.requestTime,
-        // result: tours.length,
-        // data: {
-        //     tours
-        // }
-    });
+    try{
+        const tours = await Tour.find();
+        res
+        .status(200)
+        .json({
+            status: "Success",
+            requestedAt: req.requestTime,
+            result: tours.length,
+            data: {
+                tours
+            }
+        });
+
+    }catch(err){
+        res
+        .status(400)
+        .json({
+            status:"Not Found",
+            message: "Could not find the requested data"
+        });
+    }
     
     }
 
@@ -38,7 +49,7 @@ exports.getTour = (req, res) => {
     });
 
 }
-//Creating tours using async await
+//Creating tours using async await(Promise)
 exports.createTour = async (req, res)=>{
 
     try{
