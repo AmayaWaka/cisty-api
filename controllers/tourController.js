@@ -18,29 +18,31 @@ exports.getAllTours = async (req, res)=>{
        
         let query = Tour.find(JSON.parse(queryStr));
         //2)Result sorting
+        //Sorting by price and rating
         if(req.query.sort){
             const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy);
-            // console.log(query);
-
+            query = query.sort(sortBy);           
+        //Sorting by time created by deault
         }else{
+            
             query = query.sort('-createdAt');
         }
+        //3) Field limiting
+        //Selecting specific field : projecting
+        if(req.query.fields){
+            //Removing commas and replacing with space to be used in the select method 
+            const fields = req.query.fields.split(',').join(' ');
+            query = query.select(fields)
 
+        }else{
+            //Removes database version from response
+            query = query.select('-__v')
+        }
 
-
+ 
         //Executing query
         const tours = await query;
-
-
-        // console.log(req.query);
-        // { difficulty: 'easy', duration: { gte: '5' } }
-
-        // const tours = await Tour.find()
-        // .where("duration")
-        // .equals(5)
-        // .where("difficulty")
-        // .equals("easy");
+  
         res
         .status(200)
         .json({
