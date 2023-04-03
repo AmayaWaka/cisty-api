@@ -38,6 +38,19 @@ exports.getAllTours = async (req, res)=>{
             //Removes database version from response
             query = query.select('-__v')
         }
+        //Pagination
+        //Converts page query to a number seats the default valu if not specified
+        const page = req.query.page * 1 || 1;
+        const limit = req.query.limit * 1 || 100;
+        //Setting the skip value formulae
+        const skip = (page - 1) * limit;
+
+        query = query.skip(skip).limit(limit);
+
+        if(req.query.page){
+            const numTours = await Tour.countDocuments();
+            if(skip >= numTours) throw new Error("This Page Does Not exist");
+        }
 
  
         //Executing query
@@ -147,10 +160,7 @@ exports.deleteTour = async (req, res)=>{
     }catch(err){
         res.status(404).json({
             status: "Failed",
-            message: err
-            
+            message: err            
         });
-
-    }
-    
+    }    
 }
