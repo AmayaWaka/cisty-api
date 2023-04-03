@@ -7,64 +7,81 @@ exports.aliasTopTours = (req, res, next) => {
     next();
 
 }
-
-
-
-//Getting tours using promises
-exports.getAllTours = async (req, res)=>{
-    
- 
-    try{
+//Introducing classes to make our features more reusable
+class APIFeatures {
+    constructor(query, queryString) {
+        this.query = query;
+        this.queryString = queryString;
+    }
+    filter(){
         //Build query
-        //1a) Filtering
-        const queryObj = {...req.query};
-        excludedFields = ['page', 'sort', 'limit', 'fields'];
+        //1a) FilteringString
+        const queryObj = {...this.queryString};
+        const excludedFields = ['page', 'sort', 'limit', 'fields'];
         //looping through the excluded fields  to delete from req.query value
 
         excludedFields.forEach(el => delete queryObj[el]);
         //1b)Advanced filtering 
         let queryStr = JSON.stringify(queryObj);
         queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match =>`$${match}`);
+        this.query = this.query.find(JSON.parse(queryStr));
        
-        let query = Tour.find(JSON.parse(queryStr));
+        // let query = Tour.find(JSON.parse(queryStr));
+        return this;
+        
+    }
+    sort(){
         //2)Result sorting
         //Sorting by price and rating
-        if(req.query.sort){
-            const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy);           
+        if(this.queryString.sort){
+            const sortBy = this.queryString.sort.split(',').join(' ');
+            this.query = this.query.sort(sortBy);           
         //Sorting by time created by deault
         }else{
             
-            query = query.sort('-createdAt');
+            this.query = this.query.sort('-createdAt');
         }
-        //3) Field limiting
-        //Selecting specific field : projecting
-        if(req.query.fields){
+        return this;
+        
+    }
+    limitFields(){
+        if(this.queryString.fields){
             //Removing commas and replacing with space to be used in the select method 
-            const fields = req.query.fields.split(',').join(' ');
-            query = query.select(fields)
+            const fields = this.queryString.fields.split(',').join(' ');
+            this.query = this.query.select(fields);
 
+ 
         }else{
             //Removes database version from response
-            query = query.select('-__v')
+            this.query = this.query.select('-__v')
         }
+        return this;
+    }
+    paginate(){
         //Pagination
         //Converts page query to a number seats the default valu if not specified
-        const page = req.query.page * 1 || 1;
-        const limit = req.query.limit * 1 || 100;
+        const page = this.queryString.page * 1 || 1;
+        const limit = this.queryString.limit * 1 || 100;
         //Setting the skip value formulae
         const skip = (page - 1) * limit;
 
-        query = query.skip(skip).limit(limit);
+        this.query = this.query.skip(skip).limit(limit);
+        return this;       
+    }
+    }
 
-        if(req.query.page){
-            const numTours = await Tour.countDocuments();
-            if(skip >= numTours) throw new Error("This Page Does Not exist");
-        }
-
- 
+//Getting tours using promises
+exports.getAllTours = async (req, res)=>{
+    try{
+        
         //Executing query
-        const tours = await query;
+        const features = new APIFeatures(Tour.find(), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate();
+         
+        const tours = await features.query;
   
         res
         .status(200)
@@ -105,11 +122,8 @@ exports.getTour = async (req, res) => {
         .json({
             status:"Not Found",
             message: "Could not find the requested data"
-        });
-        
-
-    }    
-
+        });        
+    }
 }
 //Creating tours using async await(Promise)
 exports.createTour = async (req, res)=>{
