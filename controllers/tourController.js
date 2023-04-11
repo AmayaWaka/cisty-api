@@ -25,9 +25,7 @@ exports.getAllTours = async (req, res)=>{
          
         const tours = await features.query;
   
-        res
-        .status(200)
-        .json({
+        res.status(200).json({
             status: "Success",
             requestedAt: req.requestTime,
             result: tours.length,
