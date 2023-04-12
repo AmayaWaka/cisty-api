@@ -3,6 +3,13 @@ const mongoose = require("mongoose");
 //Start sever
 const dotenv = require("dotenv");
 
+
+process.on("uncaughtException", err => {
+    console.log("UNHANDLED EXCEPTION! SHUTTING DOWN");
+    console.log(err.name, err.message);
+    process.exit(1);
+    
+});
 // const DB = process.env.DATABASE_LOCAL;
 dotenv.config({ path: "./.env" });
 
@@ -19,11 +26,12 @@ const port = process.env.PORT || 3000
 const server = app.listen(port, ()=>{
     console.log(`App running on port ${port}`);
 });
-//Handling unhandled rejection in asyncronous code
+//Handling unhandled rejection in asyncronous promises
 process.on("unhandledRejection", err => {
-    console.log(err.name, err.message);
     console.log("UNHANDLED REJECTION! SHUTTING DOWN");
+    console.log(err.name, err.message);
     server.close(() => {
         process.exit(1);
     });
 });
+
